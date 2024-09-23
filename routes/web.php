@@ -16,7 +16,8 @@ Route::middleware('guest')->group(function () {
 Route::middleware('auth')->group(function () {
     Route::inertia('/project-files', 'ProjectFiles')->name('project_files.page');
     Route::inertia('/recycle-bin', 'RecycleBin')->name('recycle_bin.page');
-    Route::inertia('/settings', 'Settings')->name('settings.page');
+    Route::inertia('/profile', 'Profile')->name('profile.page');
+    Route::inertia('/apperance', 'Apperance')->name('apperance.page');
     
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
