@@ -11,7 +11,7 @@
     <div>
         <SideBar />
 
-        <main class="p-7 w-full h-[150vh]">
+        <main class="p-7 w-full h-[150vh] dark:bg-black">
             <slot />
         </main>
     </div>
