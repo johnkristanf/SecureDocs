@@ -7,7 +7,7 @@ import { ZiggyVue } from '../../vendor/tightenco/ziggy';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import { FontAwesomeIcon } from '@fortawesome/vue-fontawesome';
 
-import { faEllipsisVertical, faFile, faFileLines, faFilePdf, faGear, faImage, faPlus, faRightFromBracket, faTable, faTrashCan } from '@fortawesome/free-solid-svg-icons';
+import { faChevronRight, faEllipsisVertical, faFile, faFileLines, faFilePdf, faGear, faImage, faMoon, faPaintBrush, faPen, faPlus, faRightFromBracket, faSun, faTable, faTrashCan, faUser } from '@fortawesome/free-solid-svg-icons';
 
 import GuestLayout from './Layout/GuestLayout.vue'
 import AuthenticatedLayout from './Layout/AuthenticatedLayout.vue'
@@ -23,7 +23,13 @@ library.add(
     faTable, 
     faFilePdf, 
     faImage,
-    faEllipsisVertical
+    faEllipsisVertical,
+    faUser,
+    faPaintBrush,
+    faChevronRight,
+    faPen,
+    faSun,
+    faMoon
 );
 
 createInertiaApp({
