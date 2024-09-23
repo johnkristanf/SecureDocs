@@ -30,8 +30,8 @@ const closeModalWhenSelect = () =>{
         <a href="#" class="flex items-center mb-6 mt-10 text-3xl font-semibold ">
             <img class="w-12 h-12 mr-2 rounded-full" :src="secureDocsLogo" alt="logo">
             <div class="flex flex-col">
-                <h1>SecureDocs</h1>
-                <h1 class="text-sm text-gray-500 opacity-75">Trusted Cloud</h1>
+                <h1 class="dark:text-white">SecureDocs</h1>
+                <h1 class="text-sm text-gray-500 opacity-75 dark:text-gray-200">Trusted Cloud</h1>
             </div>  
         </a>
 
@@ -41,7 +41,7 @@ const closeModalWhenSelect = () =>{
                 :key="link.route"
                 :href="$page.component == link.component ? null : route(link.route)"
                 :class="[ 
-                    'p-2 rounded-md w-full text-center', 
+                    'p-2 rounded-md w-full text-center dark:text-white dark:hover:bg-white dark:hover:text-black', 
                     $page.component == link.component ? 'bg-blue-600 text-white' : 'hover:bg-black hover:text-white' 
                 ]"
             >
@@ -50,7 +50,10 @@ const closeModalWhenSelect = () =>{
             </Link>
 
             <!-- Settings Button with Modal Toggle -->
-            <button @click="toggleModal" class="relative p-2 rounded-md w-full text-center hover:bg-black hover:text-white">
+            <button 
+                @click="toggleModal" 
+                class="relative p-2 rounded-md w-full text-center hover:bg-black hover:text-white dark:text-white dark:hover:bg-white dark:hover:text-black"
+            >
                 <font-awesome-icon :icon="['fas', 'gear']" class="text-xl"/> 
                 Settings 
                 <font-awesome-icon :icon="['fas', 'chevron-right']" class="absolute top-3 right-2" />
@@ -63,9 +66,9 @@ const closeModalWhenSelect = () =>{
             <div class="w-full flex items-center justify-center">
                 <img class="w-10 h-10 mr-2 rounded-full" :src="secureDocsLogo" alt="logo">
 
-                <div class="flex flex-col">
+                <div class="flex flex-col dark:text-white">
                     <h1 class="truncate">{{ $page.props.auth.user.fullname }}</h1>
-                    <p class="truncate text-gray-600 text-[13px]">{{ $page.props.auth.user.email }}</p>
+                    <p class="truncate text-gray-600 dark:text-gray-300 text-[13px]">{{ $page.props.auth.user.email }}</p>
                 </div>
             </div>
 
