@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DocumentController;
 use Illuminate\Support\Facades\Route;
 
 Route::redirect('/', '/securedocs/login');
@@ -18,6 +19,9 @@ Route::middleware('auth')->group(function () {
     Route::inertia('/recycle-bin', 'RecycleBin')->name('recycle_bin.page');
     Route::inertia('/profile', 'Profile')->name('profile.page');
     Route::inertia('/apperance', 'Apperance')->name('apperance.page');
+
+    
+    Route::post('/upload', [DocumentController::class, 'upload'])->name('document.upload');
     
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
