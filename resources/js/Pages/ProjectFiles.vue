@@ -2,6 +2,11 @@
     import Pagination from '../Components/Pagination.vue';
     import { useForm } from '@inertiajs/vue3';
 
+
+    const props = defineProps({
+        files: Array
+    })
+
     const formData = useForm({
         file: null
     });
@@ -64,7 +69,7 @@
         >
             <div class="flex flex-col justify-around items-start gap-7 h-full">
                 <div class="flex w-full justify-between ">
-                    <font-awesome-icon :icon="type.icon" class="bg-black text-white rounded-md p-3"/>
+                    <font-awesome-icon :icon="type.icon" class="bg-black dark:bg-gray-600 text-white rounded-md p-3"/>
                     <font-awesome-icon :icon="['fas', 'plus']" class="text-lg"/>
                 </div>
                 <h1 class="font-semibold text-lg">{{ type.name }}</h1>
@@ -106,6 +111,6 @@
             <h1 class="dark:text-white">All File</h1>
         </div>
 
-        <Pagination page="projectFiles" />
+        <Pagination page="projectFiles" :files="props.files" />
     </div>
 </template>
