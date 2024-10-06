@@ -15,12 +15,13 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::inertia('/project-files', 'ProjectFiles')->name('project_files.page');
+    Route::get('/project-files', [DocumentController::class, 'getDocuments'])->name('project_files.page');
     Route::inertia('/recycle-bin', 'RecycleBin')->name('recycle_bin.page');
     Route::inertia('/profile', 'Profile')->name('profile.page');
     Route::inertia('/apperance', 'Apperance')->name('apperance.page');
 
     
+    // Route::get('/get/documents', [DocumentController::class, 'getDocuments'])->name('document.get');
     Route::post('/upload', [DocumentController::class, 'upload'])->name('document.upload');
     
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
