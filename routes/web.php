@@ -15,7 +15,7 @@ Route::middleware('guest')->group(function () {
 });
 
 Route::middleware('auth')->group(function () {
-    Route::get('/project-files', [DocumentController::class, 'getDocuments'])->name('project_files.page');
+    Route::get('/project-files', [DocumentController::class, 'RenderProjectFiles'])->name('project_files.page');
     Route::inertia('/recycle-bin', 'RecycleBin')->name('recycle_bin.page');
     Route::inertia('/profile', 'Profile')->name('profile.page');
     Route::inertia('/apperance', 'Apperance')->name('apperance.page');

@@ -77,53 +77,129 @@ class DocumentController extends Controller
     }
 
 
-    public function getDocuments()
+    function getDocuments()
     {
         try {
             $userFolder = 'documents/' . Auth::id() . '/';  // Path to user-specific folder in S3
-            $bucket = env('AWS_BUCKET');
+            $bucketName = env('AWS_BUCKET');
 
             // List all files in the user's folder
             $objects = $this->s3Client->listObjectsV2([
-                'Bucket' => $bucket,
+                'Bucket' => $bucketName,
                 'Prefix' => $userFolder,
             ]);
 
-            $files = [];
+            $documents = [];
             if (isset($objects['Contents'])) {
                 foreach ($objects['Contents'] as $object) {
                     $key = $object['Key'];
 
                     // Generate a pre-signed URL for each file
                     $cmd = $this->s3Client->getCommand('GetObject', [
-                        'Bucket' => $bucket,
+                        'Bucket' => $bucketName,
                         'Key'    => $key
                     ]);
 
                     $request = $this->s3Client->createPresignedRequest($cmd, '+60 minutes');
                     $presignedURL = (string) $request->getUri();
 
-                    $files[] = [
+                    $documents[] = [
                         'name' => basename($key),  
                         'url' => $presignedURL,
                     ];
                 }
             }
 
-            Log::debug("FILES", [
-                'files' => $files
-            ]);
-
-            return Inertia::render('ProjectFiles', [
-                'files' => $files,
-            ]);
+           return $documents;
 
         } catch (\Exception $e) {
-            Log::error('Error getting document in S3 bucket: ' . $e->getMessage(), [
-                'trace' => $e->getTraceAsString()
+            Log::error('Error getting document in S3 bucket: ' . $e->getMessage());
+        }
+    }
+
+
+    function getUploadedFileSizes()
+    {
+        try {
+            $bucketName = env('AWS_BUCKET');
+            $fileGroups = [
+                'Documents' => ['docx'],
+                'Spreadsheets' => ['xlsx', 'csv'],
+                'Images' => ['jpg', 'png'],
+                'PDFs' => ['pdf'],
+            ];
+    
+
+            $results = $this->s3Client->listObjectsV2([
+                'Bucket' => $bucketName
             ]);
 
-            return response()->json(['error' => 'Unable to retrieve documents'], 500);
+            $totalSizes = [
+                'Documents' => 0,
+                'Spreadsheets' => 0,
+                'Images' => 0,
+                'PDFs' => 0,
+            ];
+
+            Log::debug('S3 List Objects Response', [
+                'Bucket' => $bucketName,
+                'Contents' => isset($results['Contents']) ? $results['Contents'] : 'No Contents',
+            ]);
+
+
+            if(isset($results['Contents'])){
+                foreach ($results['Contents'] as $document) {
+                    $documentKey = $document['Key'];
+                    $documentSize = $document['Size']; // Size in bytes
+                    
+                    $documentExtension = pathinfo($documentKey, PATHINFO_EXTENSION);
+
+                    Log::debug("FILE EXTENSIONS", [
+                        'documentExtension' => $documentExtension,
+                    ]);
+
+                    foreach($fileGroups as $group => $extensions){
+                        if(in_array($documentExtension, $extensions)){
+                            Log::debug("FILE MATCHED", [
+                                'Group' => $group,
+                                'File' => $documentKey,
+                                'Size' => $documentSize,
+                                'documentExtension' => $documentExtension,
+                            ]);
+
+                            $totalSizes[$group] += $documentSize;
+                        }
+                    }
+                }
+            }
+
+
+            $totalSizesMB = array_map(function ($size) {
+                return round($size / 1048576, 2); // Convert bytes to MB
+            }, $totalSizes);
+
+            return $totalSizesMB;
+
+
+        } catch (\Exception $e) {
+            Log::error('Error getting document sizes in S3 bucket: ' . $e->getMessage());
         }
+    }
+
+
+    public function RenderProjectFiles()
+    {
+        $documents = $this->getDocuments();
+        $documentSizes = $this->getUploadedFileSizes();
+        
+
+        Log::debug("DOCUMENTS SIZES", [
+            'sizes' => $documentSizes
+        ]);
+
+        return Inertia::render('ProjectFiles', [
+            'documents' => $documents,
+            'sizes'     => $documentSizes
+        ]);
     }
 }
