@@ -54,16 +54,16 @@
             <form class="flex flex-col gap-5 mt-6" @submit.prevent="onSubmit">
                 
                 <TextInput
+                    v-model="formData.email" 
                     placeholder="Email"
                     type="text"
-                    v-model="formData.email" 
                     :errorMessage="formData.errors.email"
                 />
 
                 <TextInput
+                    v-model="formData.password" 
                     placeholder="Password"
                     type="password"
-                    v-model="formData.password" 
                     :errorMessage="formData.errors.password"
                 />
 
