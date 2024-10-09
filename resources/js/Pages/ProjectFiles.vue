@@ -1,10 +1,12 @@
 <script setup>
+    import { reactive, watch } from 'vue';
     import Pagination from '../Components/Pagination.vue';
     import { useForm } from '@inertiajs/vue3';
 
 
     const props = defineProps({
-        files: Array
+        documents: Array,
+        sizes: Object,
     })
 
     const formData = useForm({
@@ -18,12 +20,26 @@
         { name: "New Image", icon: ['fas', 'image'], accept: 'image/*' },
     ];
 
-    const uploadedSizes = [
-        { name: "Document", icon: ['fas', 'file-lines'], size: "16gb", bg: "bg-violet-800" },
-        { name: "Spreadsheet", icon: ['fas', 'table'], size: "7gb", bg: "bg-blue-800" },
-        { name: "PDF", icon: ['fas', 'file-pdf'], size: "8gb", bg: "bg-green-800" },
-        { name: "Image", icon: ['fas', 'image'], size: "10gb", bg: "bg-orange-800" },
-    ];
+    const uploadedSizes = reactive([
+        { name: "Documents", icon: ['fas', 'file-lines'], size: "0MB", bg: "bg-violet-800" },
+        { name: "Spreadsheets", icon: ['fas', 'table'], size: "0MB", bg: "bg-blue-800" },
+        { name: "PDFs", icon: ['fas', 'file-pdf'], size: "0MB", bg: "bg-green-800" },
+        { name: "Images", icon: ['fas', 'image'], size: "0MB", bg: "bg-orange-800" },
+    ]);
+
+
+    watch(() => props.sizes, (newSizes) => {
+        uploadedSizes.forEach((uploadSize) => {
+            const groupName = uploadSize.name;  
+            if (newSizes[groupName] !== undefined && newSizes[groupName] < 1000) {
+                uploadSize.size = `${newSizes[groupName]}MB`; 
+            } else {
+                uploadSize.size = `${newSizes[groupName]}GB`; 
+            }
+        });
+    }, { immediate: true });
+
+    console.log("uploadedSizes: ", uploadedSizes)
 
     const uploadDocuments = () => {
         formData.post(route('document.upload'), {
@@ -50,6 +66,8 @@
         const fileInput = document.getElementById(`file-input-${index}`);
         if (fileInput) fileInput.click();
     };
+
+    console.log("sizes: ", props.sizes)
 
 </script>
 
@@ -111,6 +129,6 @@
             <h1 class="dark:text-white">All File</h1>
         </div>
 
-        <Pagination page="projectFiles" :files="props.files" />
+        <Pagination page="projectFiles" :documents="props.documents" />
     </div>
 </template>
