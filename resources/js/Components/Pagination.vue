@@ -1,42 +1,48 @@
 <script setup>
-import { ref } from 'vue';
-import { usePage } from '@inertiajs/vue3';
-import secureDocsLogo from '../../../public/img/securedocs_logo.png';
-import OptionsModal from './OptionsModal.vue';
+  import { ref } from 'vue';
+  import { usePage } from '@inertiajs/vue3';
+  import secureDocsLogo from '../../../public/img/securedocs_logo.png';
+  import OptionsModal from './OptionsModal.vue';
 
-const fileProps = defineProps({
-  page: String,
-  documents: {
-    type: Array,
-    default: () => []
-  },
-});
+  const fileProps = defineProps({
+    page: String,
+    documents: {
+      type: Array,
+      default: () => []
+    },
+  });
 
-const { props } = usePage();
-const user = props.auth.user;
+  const { props } = usePage();
+  const user = props.auth.user;
 
-const showModal = ref(false);
-const modalPosition = ref({ top: '0px', left: '0px' });
-const selectedFile = ref(null);
+  const showModal = ref(false);
+  const modalPosition = ref({ top: '0px', left: '0px' });
+  const selectedFile = ref(null);
+  const ellipsisRef = ref(null);
 
 
-const handleEllipsisClick = (event, file) => {
-  
-  const rect = event.currentTarget.getBoundingClientRect();
+  const handleEllipsisClick = (event, file) => {
+    
+    const rect = event.currentTarget.getBoundingClientRect();
 
-  modalPosition.value = {
-    top: `${rect.top + window.scrollY + 20}px`, 
-    left: `${rect.left + window.scrollX - 300}px` 
+    modalPosition.value = {
+      top: `${rect.top + window.scrollY + 20}px`, 
+      left: `${rect.left + window.scrollX - 300}px` 
+    };
+    
+    ellipsisRef.value = event.currentTarget; // Store the ellipsis icon reference
+    selectedFile.value = file;  
+    showModal.value = true;    
+
   };
-  
-  selectedFile.value = file;  
-  showModal.value = true;    
-};
 
-const closeModal = () => {
-  showModal.value = false;
-  selectedFile.value = null;
-};
+  const closeModal = () => {
+    showModal.value = false;
+    selectedFile.value = null;
+    ellipsisRef.value = null;
+  };
+
+
 
 </script>
 
@@ -48,6 +54,7 @@ const closeModal = () => {
     :file="selectedFile"
     :position="modalPosition"
     @close="closeModal"
+    :ellipsisRef="ellipsisRef"
   />
 
   <!-- Table structure -->
@@ -95,10 +102,10 @@ const closeModal = () => {
 
               <tbody class="bg-white divide-y divide-gray-200 dark:bg-gray-800 dark:divide-gray-700">
 
-                <tr v-for="file in fileProps.documents" :key="file.name">
+                <tr v-for="document in fileProps.documents" :key="document.name">
 
                   <td class="py-4 px-6 text-sm font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    {{ file.name }}
+                    {{ document.name }}
                   </td>
 
                   <td v-if="fileProps.page === 'projectFiles'" class="flex items-center py-4 px-6 text-sm font-medium text-gray-900 whitespace-nowrap dark:text-white">
@@ -110,13 +117,13 @@ const closeModal = () => {
                   </td>
 
                   <td class="py-4 px-6 text-sm font-medium text-gray-900 whitespace-nowrap dark:text-white">
-                    Jan 4, 2002
+                    {{ document.uploaded_date }}
                   </td>
 
                   <td class="py-4 px-6 text-lg font-medium text-gray-900 whitespace-nowrap dark:text-white ">
                     <font-awesome-icon 
                       :icon="['fas', 'ellipsis-vertical']" 
-                      @click="handleEllipsisClick($event, file)" 
+                      @click="handleEllipsisClick($event, document)" 
                       class="p-2 rounded-full hover:cursor-pointer hover:opacity-75 hover:bg-gray-300" 
                     />
                   </td>
