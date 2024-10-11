@@ -23,6 +23,7 @@ Route::middleware('auth')->group(function () {
     
     // Route::get('/get/documents', [DocumentController::class, 'getDocuments'])->name('document.get');
     Route::post('/upload', [DocumentController::class, 'upload'])->name('document.upload');
+    Route::delete('/delete/{documentName}', [DocumentController::class, 'deleteDocuments']);
     
     Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 

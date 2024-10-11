@@ -29,6 +29,23 @@ class DocumentController extends Controller
         
     }
 
+
+    public function RenderProjectFiles()
+    {
+        $documents = $this->getDocuments();
+        $documentSizes = $this->getUploadedFileSizes();
+        
+
+        // Log::debug("DOCUMENTS SIZES", [
+        //     'sizes' => $documentSizes
+        // ]);
+
+        return Inertia::render('ProjectFiles', [
+            'documents' => $documents,
+            'sizes'     => $documentSizes
+        ]);
+    }
+
     public function upload(Request $request)
     {
         try {
@@ -91,10 +108,12 @@ class DocumentController extends Controller
 
             $documents = [];
             if (isset($objects['Contents'])) {
-                foreach ($objects['Contents'] as $object) {
-                    $key = $object['Key'];
 
-                    // Generate a pre-signed URL for each file
+                foreach ($objects['Contents'] as $object) {
+
+                    $key = $object['Key'];
+                    $lastModified = $object['LastModified']->format('M d, Y');
+
                     $cmd = $this->s3Client->getCommand('GetObject', [
                         'Bucket' => $bucketName,
                         'Key'    => $key
@@ -106,6 +125,7 @@ class DocumentController extends Controller
                     $documents[] = [
                         'name' => basename($key),  
                         'url' => $presignedURL,
+                        'uploaded_date' => $lastModified
                     ];
                 }
             }
@@ -141,10 +161,10 @@ class DocumentController extends Controller
                 'PDFs' => 0,
             ];
 
-            Log::debug('S3 List Objects Response', [
-                'Bucket' => $bucketName,
-                'Contents' => isset($results['Contents']) ? $results['Contents'] : 'No Contents',
-            ]);
+            // Log::debug('S3 List Objects Response', [
+            //     'Bucket' => $bucketName,
+            //     'Contents' => isset($results['Contents']) ? $results['Contents'] : 'No Contents',
+            // ]);
 
 
             if(isset($results['Contents'])){
@@ -154,18 +174,14 @@ class DocumentController extends Controller
                     
                     $documentExtension = pathinfo($documentKey, PATHINFO_EXTENSION);
 
-                    Log::debug("FILE EXTENSIONS", [
-                        'documentExtension' => $documentExtension,
-                    ]);
-
                     foreach($fileGroups as $group => $extensions){
                         if(in_array($documentExtension, $extensions)){
-                            Log::debug("FILE MATCHED", [
-                                'Group' => $group,
-                                'File' => $documentKey,
-                                'Size' => $documentSize,
-                                'documentExtension' => $documentExtension,
-                            ]);
+                            // Log::debug("FILE MATCHED", [
+                            //     'Group' => $group,
+                            //     'File' => $documentKey,
+                            //     'Size' => $documentSize,
+                            //     'documentExtension' => $documentExtension,
+                            // ]);
 
                             $totalSizes[$group] += $documentSize;
                         }
@@ -187,19 +203,26 @@ class DocumentController extends Controller
     }
 
 
-    public function RenderProjectFiles()
+    public function deleteDocuments(string $documentName)
     {
-        $documents = $this->getDocuments();
-        $documentSizes = $this->getUploadedFileSizes();
-        
+        try {
 
-        Log::debug("DOCUMENTS SIZES", [
-            'sizes' => $documentSizes
-        ]);
+            $s3Key = 'documents/' . Auth::id() . '/' . $documentName;
+            Log::debug('Document s3Key: '. $s3Key);
 
-        return Inertia::render('ProjectFiles', [
-            'documents' => $documents,
-            'sizes'     => $documentSizes
-        ]);
+            $result = $this->s3Client->deleteObject([
+                'Bucket' => env('AWS_BUCKET'),
+                'Key'    => $s3Key
+            ]);
+
+            if($result){
+                Log::info("File deleted successfully from S3", ['s3Key' => $s3Key]);
+                return back()->with('success', 'File uploaded successfully.');
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Error deleting document sizes in S3 bucket: ' . $e->getMessage());
+        }
     }
+   
 }
