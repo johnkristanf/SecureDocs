@@ -2,6 +2,7 @@
     import { reactive, watch } from 'vue';
     import Pagination from '../Components/Pagination.vue';
     import { useForm } from '@inertiajs/vue3';
+import Swal from 'sweetalert2';
 
 
     const props = defineProps({
@@ -45,7 +46,17 @@
         formData.post(route('document.upload'), {
             preserveScroll: true,
 
-            onSuccess: () => formData.reset(),
+            onSuccess: () => {
+                Swal.fire({
+                    position: "top-end",
+                    icon: "success",
+                    title: "Document Uploaded Successfully",
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+
+                formData.reset()
+            },
             onError: (errors) => console.error('Error in uploading document: ', errors)
         })
     }
