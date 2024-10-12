@@ -1,5 +1,86 @@
 <script setup>
-  import secureDocsLogo from '../../../public/img/securedocs_logo.png'
+  import Swal from 'sweetalert2';
+  import secureDocsLogo from '../../../public/img/securedocs_logo.png';
+  import TextInput from '../Components/TextInput.vue';
+
+  import { useForm, usePage } from '@inertiajs/vue3';
+  import { ref } from 'vue';
+
+  const { props } = usePage();
+  const user = props.auth.user;
+
+  const fileInput = ref(null);
+
+  const inputFormData = useForm({
+    user_id: Number(user.id),
+    fullName: user.fullname,
+    email: user.email,
+    oldPassword: null,
+    newPassword: null
+  });
+
+
+  const imageFormData =  useForm({
+    file: null
+  });
+
+
+  const onSubmit = () => {
+    inputFormData.post('/edit/profile', {
+      preserveScroll: true,
+
+      onSuccess: () => {
+        Swal.fire({
+          position: "top-end",
+          icon: "success",
+          title: "Edit Profile Successfully",
+          showConfirmButton: false,
+          timer: 1500
+        });
+
+        inputFormData.reset('oldPassword');
+        inputFormData.reset('newPassword');
+      },
+
+      onError: (errors) => {
+        console.error('Error in logging in: ', errors);
+        inputFormData.reset('oldPassword');
+        inputFormData.reset('newPassword');
+      },
+    });
+  };
+
+  
+  const handleFileUploadClick = () => fileInput.value.click();
+
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      imageFormData.file = file
+    }
+
+    uploadProfile()
+  };
+
+  const uploadProfile = () => {
+    imageFormData.post('/upload/profile/picture', {
+      preserveScroll: true,
+
+      onSuccess: () => {
+        Swal.fire({
+          position: "top-end",
+          icon: "success",
+          title: "Profile Picture Uploaded Successfully",
+          showConfirmButton: false,
+          timer: 1500
+        });
+
+          formData.reset()
+        },
+      onError: (errors) => console.error('Error in uploading document: ', errors)
+    })
+  }
+
 </script>
 
 <template>
@@ -16,12 +97,35 @@
     <h1 class="mt-8">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Illo non, blanditiis aspernatur facilis.</h1>
 
     <div class="w-1/2 flex justify-around gap-16 gap-5 mt-8 font-semibold">
-        <form class="w-full flex flex-col gap-5 ">
-          <input type="text" class="w-full focus:outline-none border border-gray-200 rounded-md p-2 dark:text-black" placeholder="Full Name">
+        <form class="w-full flex flex-col gap-5" @submit.prevent="onSubmit">
+          
+          <TextInput
+            v-model="inputFormData.fullName"
+            type="text"
+            placeholder="Full Name"
+            :errorMessage="inputFormData.errors.fullName"
+          />
 
-          <input type="text" class="w-full focus:outline-none border border-gray-200 rounded-md p-2 dark:text-black" placeholder="Full Name">
-          <input type="password" class="w-full focus:outline-none border border-gray-200 rounded-md p-2 dark:text-black" placeholder="Full Name">
-          <input type="password" class="w-full focus:outline-none border border-gray-200 rounded-md p-2 dark:text-black" placeholder="Full Name">
+          <TextInput
+            v-model="inputFormData.email"
+            type="text"
+            placeholder="Email"
+            :errorMessage="inputFormData.errors.email"
+          />
+
+          <TextInput
+            v-model="inputFormData.oldPassword"
+            type="password"
+            placeholder="Old Password"
+            :errorMessage="inputFormData.errors.oldPassword"
+          />
+
+          <TextInput
+            v-model="inputFormData.newPassword"
+            type="password"
+            placeholder="New Password"
+            :errorMessage="inputFormData.errors.newPassword"
+          />
 
           <button 
             type="submit" 
@@ -41,8 +145,12 @@
 
           <font-awesome-icon 
             :icon="['fas', 'pen']" 
-            class="absolute bg-black rounded-full p-3 text-white bottom-[70px] left-[-8px] text-lg dark:text-blue-600"
+            class="absolute bg-black rounded-full p-3 text-white bottom-[70px] left-[-8px] text-lg dark:text-blue-600 hover:cursor-pointer"
+            @click="handleFileUploadClick"
           />
+
+          <input type="file" ref="fileInput" class="hidden" @change="handleFileChange" accept="image/*" />
+
         </div>
 
         
