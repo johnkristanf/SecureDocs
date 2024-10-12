@@ -46,7 +46,7 @@ class DocumentController extends Controller
         ]);
     }
 
-    public function upload(Request $request)
+    public function uploadDocuments(Request $request)
     {
         try {
             $request->validate([
@@ -84,7 +84,6 @@ class DocumentController extends Controller
         } catch (\Exception $e) {
             Log::error(
                 'Error uploading document in S3 bucket: ' . $e->getMessage(), 
-                ['trace' => $e->getTraceAsString()]
             );
 
             return back()->withErrors([
