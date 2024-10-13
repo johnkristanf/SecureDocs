@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Inertia\Inertia;
 
 class AuthController extends Controller
 {
@@ -61,6 +62,11 @@ class AuthController extends Controller
             if($isAuthenticated){
                 $request->session()->regenerate();
                 return redirect()->route('project_files.page');
+
+            } else {
+                return back()->withErrors([
+                    'email' => 'The provided credentials do not match our records'
+                ])->onlyInput('email');
             }
     
         } catch (\Exception $e) {
@@ -68,13 +74,19 @@ class AuthController extends Controller
                 'Error registering logging in user: '. $e->getMessage(), 
                 ['trace' => $e->getTraceAsString()]
             );
-
-            return back()->withErrors([
-                'email' => 'The provided credentials do not match our records'
-            ])->onlyInput('email');
         }
         
         
+    }
+
+
+    public function RenderProfile()
+    {
+        $picture = $this->getProfilePicture();
+
+        return Inertia::render('Profile', [
+            'picture' => $picture,
+        ]);
     }
 
     public function editProfile(Request $request)
@@ -126,6 +138,40 @@ class AuthController extends Controller
     }
 
 
+    function deleteOldProfileBeforeNewUpload()
+    {
+        try {
+            $objects = [];
+
+            $contents = $this->s3Client->listObjectsV2([
+                'Bucket' => env('AWS_BUCKET')
+            ]);
+
+            if(isset($contents['Contents'])){
+                foreach($contents['Contents'] as $content){
+                    $objects[] = [
+                        'Key' => $content['Key']
+                    ];
+                };
+    
+                $deleteResult = $this->s3Client->deleteObjects([
+                    'Bucket' => env('AWS_BUCKET'),
+                    'Delete' => [
+                        'Objects' => $objects
+                    ]
+                ]);
+    
+                Log::debug("Delete profile result: " . $deleteResult);
+            }
+            
+        } catch (\Exception $e) {
+            Log::error(
+                'Error deleting picture in S3 bucket: ' . $e->getMessage(), 
+            );
+        }
+    }
+
+
     public function uploadProfilePicture(Request $request)
     {
         try {
@@ -139,6 +185,10 @@ class AuthController extends Controller
             ]);
     
             if($request->hasFile('file')){
+
+                $this->deleteOldProfileBeforeNewUpload();
+
+
                 $file = $request->file('file');
                 $fileName = $file->getClientOriginalName();
     
@@ -172,6 +222,49 @@ class AuthController extends Controller
         }
 
         
+    }
+
+
+    function getProfilePicture()
+    {
+        try {
+            $userPrefix = 'picture/' . Auth::id() . '/';
+            $objects = $this->s3Client->listObjectsV2([
+                'Bucket' => env('AWS_BUCKET'),
+                'Prefix' => $userPrefix
+            ]);
+
+            $picture = [];
+            if(isset($objects['Contents'])){
+
+                foreach($objects['Contents'] as $object){
+                    $key = $object['Key'];
+                    
+                    $cmd = $this->s3Client->getCommand('GetObject', [
+                        'Bucket' => env('AWS_BUCKET'),
+                        'Key'    => $key
+                    ]);
+
+                    $request = $this->s3Client->createPresignedRequest($cmd, '+60 minutes');
+                    $presignedURL = (string) $request->getUri();
+
+                    $picture[] = [
+                        'url' => $presignedURL
+                    ];
+                }
+            }
+
+            Log::debug("Profile Picture: ", [
+                'picture' => $picture
+            ]);
+
+            return $picture;
+
+        } catch (\Exception $e) {
+            Log::error(
+                'Error getting picture in S3 bucket: ' . $e->getMessage(), 
+            );
+        }
     }
 
 
