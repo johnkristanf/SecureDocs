@@ -1,13 +1,8 @@
 <script setup>
-  import { onMounted, ref } from 'vue';
-import secureDocsLogo from '../../../public/img/securedocs_logo.png';
+    import secureDocsLogo from '../../../public/img/securedocs_logo.png';
+    import { ThemeSelector } from '../../helpers/ThemeSelector';
 
-
-    onMounted(() => {
-        if(localStorage.getItem('theme') === 'dark'){
-            document.documentElement.classList.add('dark')
-        }
-    });
+    ThemeSelector();
  
 
     const setLightTheme = () => {
@@ -30,8 +25,8 @@ import secureDocsLogo from '../../../public/img/securedocs_logo.png';
 
 <template>
     <div class="flex flex-col w-full items-center ">
-        <div class="relative w-1/2 ">
-            <h1 class="font-semibold text-2xl relative z-10 dark:text-white">Apperance</h1>
+        <div class="relative w-full md:w-1/2 ">
+            <h1 class="font-semibold text-2xl relative z-10 dark:text-white ml-12 md:ml-0">Apperance</h1>
             
             <div class="absolute inset-0 flex items-center justify-center mt-10">
                 <div class="w-full h-[2px] bg-gray-400 -z-10 "></div>
@@ -40,7 +35,7 @@ import secureDocsLogo from '../../../public/img/securedocs_logo.png';
 
         <h1 class="mt-8 dark:text-white">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Illo non, blanditiis aspernatur facilis.</h1>
 
-        <div class="w-1/2 flex justify-around gap-16 gap-5 mt-9 font-semibold">
+        <div class="w-full md:w-1/2 flex justify-around gap-16 gap-5 mt-9 font-semibold">
             
             <div 
                 v-for="theme in themes"
