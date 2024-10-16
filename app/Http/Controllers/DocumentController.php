@@ -13,20 +13,10 @@ class DocumentController extends Controller
 {
     private $s3Client;
 
-    public function __construct()
+    public function __construct(S3Client $s3Client)
     {
 
-        $this->s3Client = new S3Client([
-            'version' => 'latest',
-            'region'  => env('AWS_DEFAULT_REGION'),
-            'credentials' => [
-                'key'    => env('AWS_ACCESS_KEY_ID'),
-                'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            ],
-            'http' => [
-                'verify' => false,  
-            ],
-        ]);
+        $this->s3Client = $s3Client;
         
     }
 
