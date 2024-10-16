@@ -2,7 +2,10 @@
     import { reactive, watch } from 'vue';
     import Pagination from '../Components/Pagination.vue';
     import { useForm } from '@inertiajs/vue3';
-import Swal from 'sweetalert2';
+    import Swal from 'sweetalert2';
+    import { ThemeSelector } from '../../helpers/ThemeSelector';
+
+    ThemeSelector();
 
 
     const props = defineProps({
@@ -43,7 +46,7 @@ import Swal from 'sweetalert2';
     console.log("uploadedSizes: ", uploadedSizes)
 
     const uploadDocuments = () => {
-        formData.post(route('document.upload'), {
+        formData.post('/upload', {
             preserveScroll: true,
 
             onSuccess: () => {
@@ -85,7 +88,7 @@ import Swal from 'sweetalert2';
 <template>
     <Head title="Project Files" />
 
-    <div class="w-[55%] flex justify-center ">
+    <div class="w-full md:w-[55%] flex justify-center ">
         <h1 class="text-3xl font-semibold dark:text-white">Project Files</h1>
     </div>
 
@@ -93,7 +96,7 @@ import Swal from 'sweetalert2';
         <div 
             v-for="(type, index) in uploadTypes"
             :key="type.name"
-            class="w-[18%] h-32 rounded-md border border-gray-200 p-3 hover:cursor-pointer hover:shadow-md hover:shadow-black transition-shadow duration-300 dark:text-white dark:hover:shadow-white hover:shadow-md"
+            class="w-[20%] md:w-[18%] h-32 rounded-md border border-gray-200 p-3 hover:cursor-pointer hover:shadow-md hover:shadow-black transition-shadow duration-300 dark:text-white dark:hover:shadow-white hover:shadow-md"
             @click="triggerFileInput(index)"
         >
             <div class="flex flex-col justify-around items-start gap-7 h-full">
@@ -115,11 +118,11 @@ import Swal from 'sweetalert2';
     </div>
 
     <div class="flex flex-col w-full items-start mt-12">
-        <div class="w-[58%] flex justify-center font-semibold text-xl dark:text-white">
+        <div class="w-full md:w-[58%] flex justify-center font-semibold text-xl dark:text-white">
             <h1>Total Uploaded File Size</h1>
         </div>
 
-        <div class="w-full flex justify-end mt-4 gap-8 ">
+        <div class="w-full flex  justify-start md:justify-end mt-4 gap-12 md:gap-8">
             <div 
                 v-for="size in uploadedSizes"
                 :key="size.name"
@@ -136,8 +139,8 @@ import Swal from 'sweetalert2';
     </div>
 
     <div class="flex flex-col w-full items-start mt-16">
-        <div class="w-[48%] flex justify-center font-semibold text-2xl ">
-            <h1 class="dark:text-white">All File</h1>
+        <div class="w-full md:w-[60%] flex justify-center font-semibold text-2xl ">
+            <h1 class="dark:text-white">Uploaded Documents</h1>
         </div>
 
         <Pagination page="projectFiles" :documents="props.documents" />

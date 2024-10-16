@@ -1,14 +1,20 @@
 <script setup>
   import Swal from 'sweetalert2';
-  import secureDocsLogo from '../../../public/img/securedocs_logo.png';
+  import defaultProfile from '../../../public/img/default_profile.png';
   import TextInput from '../Components/TextInput.vue';
 
   import { useForm, usePage } from '@inertiajs/vue3';
   import { ref } from 'vue';
+  import { ThemeSelector } from '../../helpers/ThemeSelector';
+
+  ThemeSelector();
 
   const { props } = usePage();
   const user = props.auth.user;
-
+  const picture = ref(props.picture);
+  
+  console.log("picture: ", picture);
+  
   const fileInput = ref(null);
 
   const inputFormData = useForm({
@@ -75,9 +81,12 @@
           timer: 1500
         });
 
-          formData.reset()
-        },
-      onError: (errors) => console.error('Error in uploading document: ', errors)
+        window.location.href = "/profile";
+
+
+      },
+
+      onError: (errors) => console.error('Error in uploading profile picture: ', errors)
     })
   }
 
@@ -85,8 +94,8 @@
 
 <template>
   <div class="flex flex-col w-full items-center dark:text-white">
-    <div class="relative w-1/2 ">
-      <h1 class="font-semibold text-2xl relative z-10">My Profile</h1>
+    <div class="relative w-full md:w-1/2 ">
+      <h1 class="font-semibold text-2xl relative z-10 pl-12 md:pl-0">My Profile</h1>
       
       <!-- Underline using pseudo-element -->
       <div class="absolute inset-0 flex items-center justify-center mt-10">
@@ -96,7 +105,7 @@
 
     <h1 class="mt-8">Lorem, ipsum dolor sit amet consectetur adipisicing elit. Illo non, blanditiis aspernatur facilis.</h1>
 
-    <div class="w-1/2 flex justify-around gap-16 gap-5 mt-8 font-semibold">
+    <div class="w-full md:w-1/2 flex flex-col-reverse md:flex-row justify-center md:justify-around gap-16 gap-5 mt-8 font-semibold">
         <form class="w-full flex flex-col gap-5" @submit.prevent="onSubmit">
           
           <TextInput
@@ -136,16 +145,25 @@
             
         </form>
 
-        <div class="relative">
+        <div class="relative w-full flex justify-center">
           <img 
-            :src="secureDocsLogo" 
+            v-if="picture.length > 0"
+            v-for="pic in picture"
+            :src="pic.url" 
             alt="User Profile Picture"
-            class="w-full  rounded-full bg-white p-5"
+            class="w-[40%] md:w-full rounded-full bg-white p-5"
+          />
+
+          <img 
+            v-if="picture.length == 0"
+            :src="defaultProfile" 
+            alt="User Profile Picture"
+            class="w-[40%] md:w-full rounded-full bg-white p-5"
           />
 
           <font-awesome-icon 
             :icon="['fas', 'pen']" 
-            class="absolute bg-black rounded-full p-3 text-white bottom-[70px] left-[-8px] text-lg dark:text-blue-600 hover:cursor-pointer"
+            class="absolute bg-black rounded-full p-3 text-white bottom-[3px] md:bottom-[70px] left-[125px] sm:left-[220px] md:left-[-8px] text-lg dark:text-blue-600 hover:cursor-pointer hover:opacity-75 dark:bg-gray-300"
             @click="handleFileUploadClick"
           />
 

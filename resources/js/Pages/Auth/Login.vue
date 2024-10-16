@@ -29,7 +29,7 @@
 <template>
     <Head title="SecureDocs Login" />
 
-    <div class="flex justify-around items-center w-full h-full">
+    <div class="flex justify-around items-center w-full h-full flex-col md:flex-row gap-5">
 
         <div class="flex items-center">
             <img 
@@ -47,11 +47,11 @@
         </div>
         
 
-        <div class="w-[40%] bg-white h-[63%] p-8 rounded-md flex flex-col font-semibold">
+        <div class="w-full md:w-[40%] bg-white h-[63%] p-8 rounded-md flex flex-col font-semibold">
             <h1 class="text-3xl mb-1">Welcome to SecureDocs👋</h1>
             <p class="text-gray-500 text-sm">Please Sign In you Account and start securing documents.</p>
 
-            <form class="flex flex-col gap-5 mt-6" @submit.prevent="onSubmit">
+            <form class="flex flex-col gap-5 mt-6 " @submit.prevent="onSubmit">
                 
                 <TextInput
                     v-model="formData.email" 

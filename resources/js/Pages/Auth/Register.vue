@@ -27,7 +27,7 @@ import { computed } from 'vue';
 <template>
     <Head title="SecureDocs Register" />
 
-    <div class="flex justify-around items-center w-full h-full">
+    <div class="flex justify-around items-center w-full h-full flex-col md:flex-row gap-5">
 
         <div class="flex items-center">
             <img 
@@ -45,7 +45,7 @@ import { computed } from 'vue';
         </div>
         
 
-        <div :class="`w-[40%] bg-white ${hasFormErrors ? 'h-full' : 'h-[85%]'} p-8 rounded-md flex flex-col font-semibold`">
+        <div :class="`w-full md:w-[40%] bg-white ${hasFormErrors ? 'h-full' : 'h-[85%]'} p-8 rounded-md flex flex-col font-semibold`">
             <h1 class="text-3xl mb-1">Welcome to SecureDocs👋</h1>
             <p class="text-gray-500 text-sm">Please Sign Up and get started</p>
 
