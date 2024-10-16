@@ -7,6 +7,8 @@
     const emit = defineEmits(['close']);
 
     const props = defineProps({
+        document_id: Number,
+
         file: {
             type: Object,
             default: () => null,
@@ -24,6 +26,9 @@
             closeModal();
         }
     };
+
+    console.log("id: ", props.document_id);
+    
 
     const closeModal = () => emit('close');
 
@@ -64,12 +69,12 @@
                         const documentName = props.file.name
                         console.log(`Delete action for: ${documentName}`);
 
-                        router.delete(`/delete/${documentName}`, {
+                        router.put(`/document/recycle/bin/${props.document_id}`, {
                             onSuccess: () => {
                                 Swal.fire({
                                     position: "top-end",
                                     icon: "success",
-                                    title: "Document Deleted Successfully",
+                                    title: "Document is moved to recycle bin successfully",
                                     showConfirmButton: false,
                                     timer: 1500
                                 });
@@ -113,7 +118,7 @@
 
         <h1 class="hover:bg-gray-300 hover:cursor-pointer p-2 rounded-md" @click="deleteFile">
             <font-awesome-icon :icon="['fas', 'trash-can']" class="text-md"/> 
-            Move to Trash 
+            Move to Recycle Bin 
         </h1>
 
     </div>
