@@ -68,7 +68,7 @@ const toggleSidebar = () => {
   <!-- Sidebar (Hidden by default on small screens) -->
   <div 
     v-if="showSidebar"
-    class="fixed top-0 left-0 flex flex-col p-5 sm:w-[50%] md:w-[40%] lg:w-[20%] z-[9999] h-screen gap-5 items-center font-semibold text-black border-r border-gray-300 dark:bg-white dark:text-black transition-all duration-300 transform md:translate-x-0"
+    class="fixed top-0 left-0 flex flex-col p-5 bg-black lg:bg-white sm:w-[50%] md:w-[40%] lg:w-[20%] z-[9999] h-screen gap-5 items-center font-semibold text-black border-r border-gray-300 dark:bg-white dark:text-black transition-all duration-300 transform md:translate-x-0"
     :class="{
       '-translate-x-full': !isSidebarOpen && windowWidth < 768,
       'translate-x-0': isSidebarOpen || windowWidth >= 768
@@ -88,7 +88,7 @@ const toggleSidebar = () => {
     <a href="#" class="flex items-center mb-6 mt-10 text-3xl font-semibold ">
       <img class="w-12 h-12 mr-2 rounded-full" :src="secureDocsLogo" alt="logo">
       <div class="flex flex-col">
-        <h1 class="dark:text-black">SecureDocs</h1>
+        <h1 class="dark:text-black text-white lg:text-black">SecureDocs</h1>
         <h1 class="text-sm text-gray-500 opacity-75 dark:text-gray-400">Trusted Cloud</h1>
       </div>  
     </a>
@@ -101,8 +101,8 @@ const toggleSidebar = () => {
         :key="link.route"
         :href="$page.component == link.component ? null : route(link.route)"
         :class="[ 
-          'p-2 rounded-md w-full text-center dark:text-black dark:hover:bg-gray-300 dark:hover:text-black', 
-          $page.component == link.component ? 'bg-blue-600 text-white' : 'hover:bg-black hover:text-white' 
+          'p-2 rounded-md w-full text-center text-white lg:text-black dark:text-black dark:hover:bg-gray-300 dark:hover:text-black', 
+          $page.component == link.component ? 'bg-blue-600 text-white' : 'hover:bg-gray-200 hover:text-black' 
         ]"
         @click="closeModalWhenSelect"
       >
@@ -114,7 +114,7 @@ const toggleSidebar = () => {
       <!-- Settings Button with Modal Toggle -->
       <button 
         @click="toggleModal" 
-        class="relative p-2 rounded-md w-full text-center hover:bg-black hover:text-white dark:text-black dark:hover:bg-white dark:hover:text-black"
+        class="relative p-2 rounded-md w-full text-center text-white lg:text-black hover:bg-gray-200 hover:text-black dark:text-black dark:hover:bg-white dark:hover:text-black"
       >
         <font-awesome-icon :icon="['fas', 'gear']" class="text-xl" /> 
         Settings 
@@ -141,7 +141,7 @@ const toggleSidebar = () => {
           alt="logo"
         />
 
-        <div class="flex flex-col dark:text-black">
+        <div class="flex flex-col dark:text-black text-white lg:text-black">
           <h1 class="truncate">{{ $page.props.auth.user.fullname }}</h1>
           <p class="truncate text-gray-600 dark:text-gray-300 text-[13px]">{{ $page.props.auth.user.email }}</p>
         </div>
