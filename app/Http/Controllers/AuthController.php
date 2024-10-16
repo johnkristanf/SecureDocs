@@ -16,21 +16,9 @@ class AuthController extends Controller
 
     private $s3Client;
 
-    public function __construct()
+    public function __construct(S3Client $s3Client)
     {
-
-        $this->s3Client = new S3Client([
-            'version' => 'latest',
-            'region'  => env('AWS_DEFAULT_REGION'),
-            'credentials' => [
-                'key'    => env('AWS_ACCESS_KEY_ID'),
-                'secret' => env('AWS_SECRET_ACCESS_KEY'),
-            ],
-            'http' => [
-                'verify' => false,  
-            ],
-        ]);
-        
+        $this->s3Client = $s3Client;
     }
 
     public function register(Request $request)
@@ -141,17 +129,22 @@ class AuthController extends Controller
     function deleteOldProfileBeforeNewUpload()
     {
         try {
+
+            $s3Key = 'picture/';
             $objects = [];
 
             $contents = $this->s3Client->listObjectsV2([
-                'Bucket' => env('AWS_BUCKET')
+                'Bucket' => env('AWS_BUCKET'),
+                'Key'    => $s3Key
             ]);
 
             if(isset($contents['Contents'])){
                 foreach($contents['Contents'] as $content){
-                    $objects[] = [
-                        'Key' => $content['Key']
-                    ];
+                    if (strpos($content['Key'], $s3Key) === 0) {
+                        $objects[] = [
+                            'Key' => $content['Key']
+                        ];
+                    }
                 };
     
                 $deleteResult = $this->s3Client->deleteObjects([
