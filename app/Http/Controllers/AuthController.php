@@ -228,6 +228,7 @@ class AuthController extends Controller
     function getProfilePicture()
     {
         try {
+
             $userPrefix = 'picture/' . Auth::id() . '/';
             $objects = $this->s3Client->listObjectsV2([
                 'Bucket' => env('AWS_BUCKET'),
@@ -248,10 +249,14 @@ class AuthController extends Controller
                     $request = $this->s3Client->createPresignedRequest($cmd, '+60 minutes');
                     $presignedURL = (string) $request->getUri();
 
+                    Log::debug('Generated Pre-signed URL: ' . $presignedURL);
+
                     $picture[] = [
                         'url' => $presignedURL
                     ];
                 }
+            } else {
+                Log::error('No contents found in S3 bucket for user prefix: ' . $userPrefix);
             }
 
             Log::debug("Profile Picture: ", [
