@@ -4,6 +4,12 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DocumentController;
 use Illuminate\Support\Facades\Route;
 
+
+// 404 not found handler
+Route::fallback(function () {
+    return redirect()->route('login.page'); // Redirect to your custom login page
+});
+
 Route::redirect('/', '/securedocs/login');
 
 Route::middleware('guest')->group(function () {
@@ -18,14 +24,18 @@ Route::middleware('auth')->group(function () {
     
     // Pages Rendering Endpoints
     Route::get('/project-files', [DocumentController::class, 'RenderProjectFiles'])->name('project_files.page');
-    Route::inertia('/recycle-bin', 'RecycleBin')->name('recycle_bin.page');
-    Route::inertia('/profile', 'Profile')->name('profile.page');
+    Route::get('/recycle-bin', [DocumentController::class, 'RenderRecycleBin'])->name('recycle_bin.page');
+
+    Route::get('/profile', [AuthController::class, 'RenderProfile'])->name('profile.page');
     Route::inertia('/apperance', 'Apperance')->name('apperance.page');
 
 
     // Documents Handling Endpoints
     Route::post('/upload', [DocumentController::class, 'uploadDocuments']);
-    Route::delete('/delete/{documentName}', [DocumentController::class, 'deleteDocuments']);
+    Route::put('/document/recycle/bin/{document_id}', [DocumentController::class, 'putToRecycleBin']);
+    Route::put('/restore/{document_id}', [DocumentController::class, 'restoreDocument']);
+
+    Route::delete('/delete/{documentID}/{documentName}', [DocumentController::class, 'deleteForeverDocuments']);
     
 
     // Profile Handling Endpoints
