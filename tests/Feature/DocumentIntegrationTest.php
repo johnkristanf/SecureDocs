@@ -36,9 +36,6 @@ class DocumentIntegrationTest extends TestCase
         ]);
 
 
-        $response->assertRedirect();
-        $response->assertSessionHas('success', 'File uploaded successfully.');
-
         $this->assertDatabaseHas('documents', [
             'name' => 'document.pdf',
             'key' =>  'documents/1/document.pdf',
@@ -46,12 +43,13 @@ class DocumentIntegrationTest extends TestCase
         ]);
 
 
+        $response->assertRedirect();
+        $response->assertSessionHas('success', 'File uploaded successfully.');
 
     }
 
 
 
-    // NEED TO BUILD FACTORY FOR THE DOCUMENTS
 
     public function test_get_documents(): void
     {
@@ -59,11 +57,13 @@ class DocumentIntegrationTest extends TestCase
         $user = User::factory()->create();
 
         $mocks3Client = Mockery::mock(S3Client::class);
+        $mocks3Command = Mockery::mock(\Aws\CommandInterface::class);
+
         $mocks3Client->shouldReceive('getCommand')
         ->with('GetObject', Mockery::on(function ($param){
-            return isset($document['Bucket']) && isset($document['Key']);
+            return isset($param['Bucket']) && isset($param['Key']);
         }))
-        ->andReturnSelf();
+        ->andReturn($mocks3Command);
 
         
         $mocks3Client->shouldReceive('createPresignedRequest')
@@ -101,6 +101,55 @@ class DocumentIntegrationTest extends TestCase
         $this->assertEquals('document1.pdf', $documents[0]['name']);
         $this->assertEquals('https://example-presigned-url.com/document.pdf', $documents[0]['url']);
         $this->assertEquals($user->id, $documents[0]['user_id']);
+
+    }
+
+
+    public function test_get_profile_picture(): void
+    {
+
+        /** @var \App\Models\User $user */
+        $user = User::factory()->create();
+
+        $mocks3Client = Mockery::mock(S3Client::class);
+        $mocksS3Commands = Mockery::mock(\Aws\CommandInterface::class);
+
+        $mocks3Client->shouldReceive('listObjectsV2')
+        ->once()
+        ->andReturn([
+            'Contents' => [
+                [
+                    'Key' => 'picture/1/profile.png',
+                    'Size' => 102400,
+                ],
+                
+            ]
+        ]);
+
+        $mocks3Client->shouldReceive('getCommand')
+        ->with('GetObject', Mockery::on(function ($param){
+            return isset($param['Bucket']) && isset($param['Key']);
+        }))
+        ->andReturn($mocksS3Commands);
+
+
+        $mocks3Client->shouldReceive('createPresignedRequest')
+        ->andReturn(Mockery::mock([
+            'getUri' => 'https://example-presigned-url.com/profile.png'
+        ]));
+
+
+        $this->app->instance(S3Client::class, $mocks3Client);
+
+        $this->actingAs($user);
+
+        $documentController = app(DocumentController::class);
+        $profile = $documentController->getProfilePicture();
+
+        $this->assertCount(1, $profile);
+
+        $this->assertEquals('https://example-presigned-url.com/profile.png', $profile[0]['url']);
+
 
     }
 
