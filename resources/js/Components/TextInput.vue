@@ -26,7 +26,7 @@
         <input 
             :type="type" 
             :class="[
-                'focus:outline-none rounded-md p-3 border border-gray-300',
+                'focus:outline-none rounded-md p-3 border border-gray-300 dark:text-black',
                 {'border !border-red-500': errorMessage}
             ]" 
             :placeholder="placeholder"
