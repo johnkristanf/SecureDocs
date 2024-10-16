@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Documents;
 use Aws\S3\S3Client;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -32,17 +33,27 @@ class DocumentController extends Controller
 
     public function RenderProjectFiles()
     {
-        $documents = $this->getDocuments();
+        $isRecycle = false;
+        $documents = $this->getDocuments($isRecycle);
         $documentSizes = $this->getUploadedFileSizes();
-        
-
-        // Log::debug("DOCUMENTS SIZES", [
-        //     'sizes' => $documentSizes
-        // ]);
-
+        $picture = $this->getProfilePicture();
+    
         return Inertia::render('ProjectFiles', [
             'documents' => $documents,
-            'sizes'     => $documentSizes
+            'sizes'     => $documentSizes,
+            'picture'   => $picture
+        ]);
+    }
+
+    public function RenderRecycleBin()
+    {
+        $isRecycle = true;
+        $picture = $this->getProfilePicture();
+        $documents = $this->getDocuments($isRecycle);
+
+        return Inertia::render('RecycleBin', [
+            'picture'   => $picture,
+            'documents' => $documents
         ]);
     }
 
@@ -59,19 +70,22 @@ class DocumentController extends Controller
             );
 
             if ($request->hasFile('file')) {
+
                 $file = $request->file('file');
                 $fileName = $file->getClientOriginalName();
-                $filePath = 'documents/' . Auth::id() . '/' . $fileName;
+                $s3Key = 'documents/' . Auth::id() . '/' . $fileName;
 
+                Log::debug('Attempting to upload file to S3');
+                
                 $result = $this->s3Client->putObject([
                     'Bucket' => env('AWS_BUCKET'),
-                    'Key'    => $filePath,
+                    'Key'    => $s3Key,
                     'SourceFile' => $file->getRealPath(),
                     'ACL'    => 'private', 
                 ]);
 
-                // Get the uploaded file URL
                 $path = $result['ObjectURL'];
+                $this->insertDocumentsDataInDB($s3Key);
 
                 Log::debug('UPLOAD RESULT: ', [
                     'path' => $path,
@@ -93,46 +107,61 @@ class DocumentController extends Controller
     }
 
 
-    function getDocuments()
+
+    function insertDocumentsDataInDB(string $s3Key)
     {
         try {
-            $userFolder = 'documents/' . Auth::id() . '/';  // Path to user-specific folder in S3
-            $bucketName = env('AWS_BUCKET');
 
-            // List all files in the user's folder
-            $objects = $this->s3Client->listObjectsV2([
-                'Bucket' => $bucketName,
-                'Prefix' => $userFolder,
+            Documents::create([
+                'name' => basename($s3Key),
+                'key'  => $s3Key,
+                'user_id' => Auth::id()
             ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error inserting document in database: ' . $e->getMessage());
+        }
+    }
+
+
+    function getDocuments(bool $isRecycle)
+    {
+        try {
+
+            $fetchedDocuments = Documents::where('user_id', Auth::id())
+            ->where('isRecycle', $isRecycle) 
+            ->get();
 
             $documents = [];
-            if (isset($objects['Contents'])) {
 
-                foreach ($objects['Contents'] as $object) {
+            foreach($fetchedDocuments as $document){
+                $cmd = $this->s3Client->getCommand('GetObject', [
+                    'Bucket' => env('AWS_BUCKET'),
+                    'Key'    => $document['key']
+                ]);
 
-                    $key = $object['Key'];
-                    $lastModified = $object['LastModified']->format('M d, Y');
+                $request = $this->s3Client->createPresignedRequest($cmd, '+60 minutes');
+                $presignedURL = (string) $request->getUri();
 
-                    $cmd = $this->s3Client->getCommand('GetObject', [
-                        'Bucket' => $bucketName,
-                        'Key'    => $key
-                    ]);
-
-                    $request = $this->s3Client->createPresignedRequest($cmd, '+60 minutes');
-                    $presignedURL = (string) $request->getUri();
-
-                    $documents[] = [
-                        'name' => basename($key),  
-                        'url' => $presignedURL,
-                        'uploaded_date' => $lastModified
-                    ];
-                }
+                $documents[] = [
+                    'id'            => $document['id'],
+                    'name'          => $document['name'],
+                    'user_id'       => $document['user_id'],
+                    'url'           => $presignedURL,
+                    'created_at'    => $document['created_at'],
+                    'isRecycle'     => $document['isRecycle'],
+                    'updated_at'    => $document['updated_at']
+                ];
             }
 
-           return $documents;
+            Log::debug("Fetch Documents From DB:", [
+                'documents' => $fetchedDocuments
+            ]);
+
+            return $documents;
 
         } catch (\Exception $e) {
-            Log::error('Error getting document in S3 bucket: ' . $e->getMessage());
+            Log::error('Error getting document in DB: ' . $e->getMessage());
         }
     }
 
@@ -202,9 +231,57 @@ class DocumentController extends Controller
     }
 
 
-    public function deleteDocuments(string $documentName)
+    public function putToRecycleBin(string $document_id)
     {
         try {
+            $document = Documents::find($document_id);
+
+            Log::debug("Document Find: ", [
+                'document' => $document
+            ]);
+
+            if(isset($document)){
+                $document->update([
+                    'isRecycle' => true
+                ]);
+            }
+
+            return back()->with('success', 'Document is moved to recycle bin successfully');
+
+        } catch (\Exception $e) {
+            Log::error('Error in updating document to recyle bin: ' . $e->getMessage());
+        }
+    }
+
+    public function restoreDocument(string $document_id)
+    {
+        try {
+
+            $document = Documents::find($document_id);
+
+            Log::debug("Document Find: ", [
+                'document' => $document
+            ]);
+
+            if(isset($document)){
+                $document->update([
+                    'isRecycle' => false
+                ]);
+            }
+
+            return back()->with('success', 'Document is restored from recycle bin successfully');
+
+        } catch (\Exception $e) {
+            Log::error('Error in restoring document from recyle bin: ' . $e->getMessage());
+        }
+    }
+
+
+    public function deleteForeverDocuments(string $documentID, string $documentName)
+    {
+        try {
+
+            $deleted = Documents::destroy($documentID);
 
             $s3Key = 'documents/' . Auth::id() . '/' . $documentName;
             Log::debug('Document s3Key: '. $s3Key);
@@ -214,13 +291,58 @@ class DocumentController extends Controller
                 'Key'    => $s3Key
             ]);
 
-            if($result){
+            if($result && $deleted){
                 Log::info("File deleted successfully from S3", ['s3Key' => $s3Key]);
-                return back()->with('success', 'File uploaded successfully.');
+                Log::info("File deleted successfully from DB", ['deleted' => $deleted]);
+
+                return back()->with('success', 'Document Forever Deleted!');
             }
 
         } catch (\Exception $e) {
             Log::error('Error deleting document sizes in S3 bucket: ' . $e->getMessage());
+        }
+    }
+
+    
+    function getProfilePicture()
+    {
+        try {
+            $userPrefix = 'picture/' . Auth::id() . '/';
+            $objects = $this->s3Client->listObjectsV2([
+                'Bucket' => env('AWS_BUCKET'),
+                'Prefix' => $userPrefix
+            ]);
+
+            $picture = [];
+            if(isset($objects['Contents'])){
+
+                foreach($objects['Contents'] as $object){
+                    $key = $object['Key'];
+                    
+                    $cmd = $this->s3Client->getCommand('GetObject', [
+                        'Bucket' => env('AWS_BUCKET'),
+                        'Key'    => $key
+                    ]);
+
+                    $request = $this->s3Client->createPresignedRequest($cmd, '+60 minutes');
+                    $presignedURL = (string) $request->getUri();
+
+                    $picture[] = [
+                        'url' => $presignedURL
+                    ];
+                }
+            }
+
+            Log::debug("Profile Picture: ", [
+                'picture' => $picture
+            ]);
+
+            return $picture;
+
+        } catch (\Exception $e) {
+            Log::error(
+                'Error getting picture in S3 bucket: ' . $e->getMessage(), 
+            );
         }
     }
    
