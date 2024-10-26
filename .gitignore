@@ -21,3 +21,9 @@ yarn-error.log
 /.idea
 /.vscode
 /.zed
+
+
+docker-compose.yml
+Dockerfile.client
+Dockerfile.server
+Dockerfile
