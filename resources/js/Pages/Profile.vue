@@ -147,7 +147,7 @@
 
         <div class="relative w-full flex justify-center">
           <img 
-            v-if="picture.length > 0"
+            v-if="picture && picture.length > 0"
             v-for="pic in picture"
             :src="pic.url" 
             alt="User Profile Picture"
@@ -155,7 +155,7 @@
           />
 
           <img 
-            v-if="picture.length == 0"
+            v-if="picture == undefined"
             :src="defaultProfile" 
             alt="User Profile Picture"
             class="w-[40%] md:w-full rounded-full bg-white p-5"

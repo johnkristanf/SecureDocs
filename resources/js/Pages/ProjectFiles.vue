@@ -33,14 +33,17 @@
 
 
     watch(() => props.sizes, (newSizes) => {
-        uploadedSizes.forEach((uploadSize) => {
-            const groupName = uploadSize.name;  
-            if (newSizes[groupName] !== undefined && newSizes[groupName] < 1000) {
-                uploadSize.size = `${newSizes[groupName]}MB`; 
-            } else {
-                uploadSize.size = `${newSizes[groupName]}GB`; 
-            }
-        });
+        if(newSizes){
+            uploadedSizes.forEach((uploadSize) => {
+                const groupName = uploadSize.name;  
+                if (newSizes[groupName] !== undefined && newSizes[groupName] < 1000) {
+                    uploadSize.size = `${newSizes[groupName]}MB`; 
+                } else {
+                    uploadSize.size = `${newSizes[groupName]}GB`; 
+                }
+            });
+        }
+        
     }, { immediate: true });
 
     console.log("uploadedSizes: ", uploadedSizes)

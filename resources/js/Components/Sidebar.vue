@@ -127,7 +127,7 @@ const toggleSidebar = () => {
     <div class="w-[80%] absolute bottom-6 font-semibold flex flex-col justify-center items-center gap-4">
       <div class="w-full flex items-center justify-center">
         <img 
-          v-if="picture.length > 0"
+          v-if="picture && picture.length > 0"
           v-for="pic in picture"
           class="w-10 h-10 mr-2 rounded-full" 
           :src="pic.url" 
@@ -135,7 +135,7 @@ const toggleSidebar = () => {
         />
 
         <img 
-          v-if="picture.length == 0"
+          v-if="picture == undefined"
           :src="defaultProfile" 
           class="w-10 h-10 mr-2 rounded-full" 
           alt="logo"

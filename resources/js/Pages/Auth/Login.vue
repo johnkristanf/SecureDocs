@@ -24,6 +24,11 @@
         })
     }
 
+    const loadTestAccount = () => {
+        formData.email = 'test@gmail.com';
+        formData.password = 'test123';
+    }
+
 </script>
 
 <template>
@@ -47,7 +52,7 @@
         </div>
         
 
-        <div class="w-full md:w-[40%] bg-white h-[63%] p-8 rounded-md flex flex-col font-semibold">
+        <div class="w-full md:w-[40%] bg-white h-[73%] p-8 rounded-md flex flex-col font-semibold">
             <h1 class="text-3xl mb-1">Welcome to SecureDocs👋</h1>
             <p class="text-gray-500 text-sm">Please Sign In you Account and start securing documents.</p>
 
@@ -78,6 +83,15 @@
                 >
                     SIGN IN
                 </button>
+
+                <button 
+                    type="button"
+                    class="bg-black p-3 rounded-md w-full text-white hover:opacity-75"
+                    @click="loadTestAccount"
+                >
+                    TEST ACCOUNT
+                </button>
+
 
             </form>
 
