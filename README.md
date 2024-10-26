@@ -1,4 +1,4 @@
-# <img src="public/img/securedocs_logo.png" alt="SecureDocs Logo" width="50" /> SecureDocs
+# <img src="public/img/securedocs_logo.png" alt="SecureDocs Logo" width="70" /> SecureDocs
 
 A document management system built with **Laravel**, **Vue.js**, and **Inertia.js**, designed for secure and efficient document storage and management. This application integrates **AWS S3** for robust file storage, includes a **recycle bin** for safe document recovery, and utilizes **Google Drive’s document viewer** to preview files directly within the application.
 
